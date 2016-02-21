@@ -14,8 +14,14 @@ document.addEventListener('DOMContentLoaded', function(event){
 						clicks: 0
 					};
 					imgList.push(imgListObj);
-				}				
-				localStorage.cats = JSON.stringify({imgList: imgList, selected: 0});
+				}
+
+				var modelData = {
+					imgList: imgList, 
+					selected: 0,
+					adminOn: false
+				};
+				localStorage.cats = JSON.stringify(modelData);
 			}
 		},
         getCatlist: function() {
@@ -33,6 +39,32 @@ document.addEventListener('DOMContentLoaded', function(event){
 			var data = JSON.parse(localStorage.cats);
 			data.selected = index;
 			localStorage.cats = JSON.stringify(data);
+		},
+		isAdminOn: function(){
+			var data = JSON.parse(localStorage.cats);
+			return data.adminOn;
+		},
+		toggleAdmin: function(toggle){
+			var data = JSON.parse(localStorage.cats);
+			
+			if(toggle !== undefined){
+				data.adminOn = !!toggle;
+			} else {
+				data.adminOn = !data.adminOn;
+			}
+			localStorage.cats = JSON.stringify(data);
+			return data.adminOn;
+		},
+		saveCat: function(index, newCat){
+			var data = JSON.parse(localStorage.cats);			
+			var cat = data.imgList[index];
+			cat.name = newCat.name;
+			cat.imageSrc = newCat.imageSrc;
+			cat.clicks = newCat.clicks;
+			data.imgList[index] = cat;
+			
+			localStorage.cats = JSON.stringify(data);
+			return cat;
 		}
 	};
 	
@@ -53,10 +85,20 @@ document.addEventListener('DOMContentLoaded', function(event){
 		setSelected: function(index){
 			return model.setSelected(index);
 		},
+		toggleAdmin: function(toggle){
+			return model.toggleAdmin(toggle);
+		},
+		isAdminOn: function(){
+			return model.isAdminOn();
+		},
+		saveCat: function(index, cat){
+			return model.saveCat(index, cat);
+		},
         init: function() {
             model.init();
             listView.init();
 			detailsView.init();
+			adminView.init();
         }
 	};
 	
@@ -67,9 +109,10 @@ document.addEventListener('DOMContentLoaded', function(event){
 		},
 		render: function(){
 			// Clear the list of cats
-			for(var node = this.catlist.firstChild; node.nextSibling !== null; node = node.nextSibling){
-				node.parent.removeChild(node);
+			while(this.catlist.firstChild){
+				this.catlist.removeChild(this.catlist.firstChild);
 			}
+						
 			octopus.getCats().forEach(function(cat, index){
 				var catlistItem = document.createElement('li');
 				catlistItem.textContent = cat.name;
@@ -114,6 +157,73 @@ document.addEventListener('DOMContentLoaded', function(event){
 				this.catdetails.replaceChild(this.catimage, currentImage);
 			} else {
 				this.catdetails.appendChild(this.catimage);
+			}
+			
+			adminView.render();
+		}
+	};
+	
+	var adminView = {
+		init: function(){
+			var selectedIndex = octopus.getSelected();
+			var selectedCat = octopus.getCats()[selectedIndex];
+			
+			this.adminform = document.querySelector('#adminform');
+			this.adminButton = document.querySelector('#adminButton');
+			
+			this.nameinput = document.querySelector('#nameinput');
+			this.urlinput = document.querySelector('#urlinput');
+			this.clicksinput = document.querySelector('#clicksinput');
+			
+			this.save = document.querySelector('#save');
+			this.cancel = document.querySelector('#cancel');
+			
+			this.save.addEventListener('click', function(event){
+				event.preventDefault();
+
+				var newCat = {
+					name: adminView.nameinput.value,
+					imageSrc: adminView.urlinput.value,
+					clicks: adminView.clicksinput.value
+				};
+				
+				octopus.saveCat(octopus.getSelected(), newCat);
+				listView.render();
+				detailsView.render();
+				adminView.render();
+			});
+			
+			this.cancel.addEventListener('click', function(event){
+				event.preventDefault();
+				
+				octopus.toggleAdmin(false);
+				adminView.render();
+			});
+			
+			this.adminButton.addEventListener('click', function(event){
+				octopus.toggleAdmin();
+				adminView.render();
+			});
+			
+			this.render();
+		},
+		render: function(){
+			var selectedIndex = octopus.getSelected();
+			var selectedCat = octopus.getCats()[selectedIndex];
+			
+			this.nameinput = document.querySelector('#nameinput');
+			this.urlinput = document.querySelector('#urlinput');
+			this.clicksinput = document.querySelector('#clicksinput');
+			
+			if(octopus.isAdminOn()){
+				adminform.style.display = 'block';
+				
+				this.nameinput.value = selectedCat.name;
+				this.urlinput.value = selectedCat.imageSrc;
+				this.clicksinput.value = selectedCat.clicks;
+				
+			} else{
+				adminform.removeAttribute('style');
 			}
 		}
 	};

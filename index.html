@@ -3,6 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>Cat Clicker Premium</title>
+	<link rel="stylesheet" type="text/css" href="css/index.css" />
 </head>
 <body>
 	<h1>Cat Clicker Premium</h1>
@@ -19,6 +20,25 @@
 		<div id="catclicks">
 			0
 		</div>
+	</div>
+	<div id="admincontainer">
+		<button id="adminButton">Admin</button>
+		<form id="adminform">
+			<div class="row" id="namerow">
+				<label for="name">Name</label>
+				<input type="text" id="nameinput" name="name" />
+			</div>
+			<div class="row"  id="urlrow">
+				<label for="url">ImgURL</label>
+				<input type="text" id="urlinput" name="url" />
+			</div>
+			<div class="row"  id="clicksrow">
+				<label for="url"># Clicks</label>
+				<input type="text" id="clicksinput" name="clicks" />
+			</div>
+			<button type="submit" name="save" id="save">Save</button>
+			<button type="submit" name="cancel" id="cancel">Cancel</button>
+		</form>
 	</div>
 	<script src="js/index.js"></script>
 </body>
